@@ -1,0 +1,92 @@
+﻿<html>
+<head>
+    <title>Library</title>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+</head>
+<body>
+    <div class="container col-10">
+
+        <div style="margin-top:50px">
+            <label class="text-danger">Book Search:</label>
+        </div>
+        <div class="form-group">
+            <label class="text-primary">Search By Book Title</label>
+            <input class="form-control" id="inp1" />
+        </div>
+        <div style="margin-top:50px">
+            <label class="text-danger">Books List:</label>
+        </div>
+        <div>
+            <label class="text-primary" id="lbl1">Show All Of The Books</label>
+            <table class="table table-bordered">
+                <thead id="thd1">
+                </thead>
+                <tbody id="tbd1">
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top:50px">
+            <label class="text-danger">Search For Authors And Display Their Books:</label>
+        </div>
+        <div class="form-group">
+            <label class="text-primary">Authors</label>
+            <select id="sa" class="form-control">
+                <option>
+                </option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="text-primary">Books</label>
+            <select id="sb" class="form-control">
+                <option>
+                </option>
+            </select>
+        </div>
+    </div>
+    <script>
+        $(() => {
+            $.get('/Book/GetBooks', books => {
+                var head = `<tr><th>Title</th><th>Publish</th><th>Price</th><th>Author</th></tr>`
+                var body = ''
+                for (var book of books) {
+                    body += `<tr><td>${book.title}</td><td>${book.publish}</td><td>${book.price}</td><td>${book.author.family}</td></tr>`
+                }
+                $(thd1).html(head)
+                $(tbd1).append(body)
+            })
+            $(inp1).keyup(function () {
+                var _word = $(this).val()
+                $.get('/Book/GetBooksBySearchWord', { word : _word }, books => {
+                    var label = `<label class="text-primary">Search Result</label>`
+                    var head = `<tr><th>Title</th><th>Publish</th><th>Price</th><th>Author</th></tr>`
+                    var body = ''
+                    for (var book of books) {
+                        body += `<tr><td>${book.title}</td><td>${book.publish}</td><td>${book.price}</td><td>${book.author.family}</td></tr>`
+                    }
+                    $(lbl1).html(label)
+                    $(thd1).html(head)
+                    $(tbd1).html(body)
+                })
+            })
+            $.get('/Book/GetAuthors', authors => {
+                var opt = ''
+                for (var author of authors) {
+                    opt += `<option value="${author.id}">${author.family}</option>`
+                }
+                $(sa).append(opt)
+            })
+            $(sa).change(function () {
+                var _authorid = $(this).val()
+                $.get('/Book/GetBooksByAuthorId', { AuthorId : _authorid }, books => {
+                    var opt = ''
+                    for (var book of books) {
+                        opt += `<option value="${book.id}">${book.title}</option>`
+                    }
+                    $(sb).html(opt)
+                })
+            })
+        })
+    </script>
+</body>
+</html>
